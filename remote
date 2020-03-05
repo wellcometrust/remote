@@ -4,7 +4,8 @@
 # Either set these here, or in your ~/.bashrc or equivalent.
 # Changing the $INSTANCE_NAME env var will allow you to send commands to 
 
-INSTANCE_NAME=datascience_base
+# Needs to be set by user with env variable or by uncommenting
+# INSTANCE_NAME=datascience_base
 REMOTE_DATALABS_PATH=/data/datalabs
 LOCAL_DATALABS_PATH=/home/matthew/Documents/wellcome/datalabs
 
