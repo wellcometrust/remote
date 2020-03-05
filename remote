@@ -140,6 +140,7 @@ function remote {
         echo -e "$WAIT Getting list of all datalabs instances"
 
         aws ec2 describe-instances --output table \
+        --filters "Name=tag:Name,Values=*datascience*" \
         --query 'Reservations[].Instances[].{Name:Tags[?Key==`Name`]|[0].Value, Instance:InstanceId,State:State.Name,InstanceType:InstanceType}'
 
     #
