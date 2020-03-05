@@ -1,0 +1,248 @@
+#!/bin/bash
+# Copy to /usr/local/bin/rnsorros
+
+# Either set these here, or in your ~/.bashrc or equivalent.
+# Changing the $INSTANCE_NAME env var will allow you to send commands to 
+
+INSTANCE_NAME=datascience_base
+REMOTE_DATALABS_PATH=/data/datalabs
+LOCAL_DATALABS_PATH=/home/matthew/Documents/wellcome/datalabs
+
+# Check whether credentials are set
+
+: "${AWS_ACCESS_KEY_ID:?}"
+: "${AWS_SECRET_ACCESS_KEY:?}"
+: "${INSTANCE_NAME:?"You must set the name of your ec2 instance, e.g. datascience_mattupson"}"
+
+WARN=⚠️
+BOOM=💥
+ZAP=⚡
+STRONG=💪
+SHRUG=🤷
+WAIT=⏳
+DONE=✔️
+
+GREEN="\e[0;32m" 
+BLUE="\e[0;34m" 
+RED="\e[0;31m" 
+WHITE="\e[0m"
+
+function remote {
+
+    #
+    # Start a stopped instance
+    #
+
+    if [[ "$1" == 'start' ]]; then
+
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME" | \
+          jq -r ".Reservations[] | .Instances[] | .InstanceId")
+
+        echo -e "$ZAP Sending start signal to instance $BLUE$INSTANCE_NAME$WHITE"
+
+        INSTANCE_IP=$(aws ec2 describe-instances --filters \
+        "Name=tag:Name,Values=$INSTANCE_NAME" | \
+        jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
+
+        aws ec2 start-instances --instance-ids $INSTANCE_ID && \
+            echo -e "$STRONG $GREEN Instance $BLUE$INSTANCE_NAME$GREEN started$WHITE"
+
+    #
+    # Create an ec2 remote in your local datalabs folder
+    #
+
+    elif [[ "$1" == 'git' ]]; then
+
+        : "${REMOTE_DATALABS_PATH:?"You must set the path to the datalabs folder on the remote (usually /data/datalabs)"}"
+        : "${LOCAL_DATALABS_PATH:?"You must set the path to your local datalabs folder on the remote (usually /data/datalabs)"}"
+
+        INSTANCE_IP=$(aws ec2 describe-instances --filters \
+        "Name=tag:Name,Values=$INSTANCE_NAME" | \
+        jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
+
+        if [[ "$INSTANCE_IP" = null ]]; then
+
+            echo -e "$WARN $RED The instance must be running before you run:" && \
+            echo -e "    remote git" && \
+            exit 1
+
+        fi
+        
+        echo -e "$GREEN Trying to create a remote named ec2 in your local"
+        echo " $LOCAL_DATALABS_PATH repo."
+
+        # Remove the remote if it exists
+
+        (cd $LOCAL_DATALABS_PATH && git remote remove ec2 > /dev/null 2>&1 || true )
+        (cd $LOCAL_DATALABS_PATH && git remote add ec2 ubuntu@$INSTANCE_IP:$REMOTE_DATALABS_PATH) &&
+            echo -e "$GREEN ...done$WHITE"; \
+            echo ""; \
+            echo " You may now push to the remote datalabs repo with:"; \
+            echo "     git push ec2"
+
+
+    #
+    # Connect to started instance
+    #
+    
+    elif [[ "$1" == 'connect' ]]; then
+    
+        INSTANCE_IP=$(aws ec2 describe-instances --filters \
+        "Name=tag:Name,Values=$INSTANCE_NAME" | jq -r \
+        '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
+
+        n=0
+        until [ $n -ge 5 ]
+        do
+            ssh ubuntu@$INSTANCE_IP && break || \
+                echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+            n=$[$n+1]
+            if [[ "$n" = 5 ]]; then 
+                echo -e "$WARN $RED Could not connect to instance $BLUE$INSTANCE_NAME$WHITE."
+                echo -e "$RED Check instance status before trying again."
+            fi
+            sleep 10
+        done
+
+    #
+    # Return the instance ID
+    #
+
+    elif [[ "$1" == 'id' ]]; then
+
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+          jq -r ".Reservations[] | .Instances[] | .InstanceId")
+
+        echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance id: $BLUE$INSTANCE_ID$WHITE"
+
+    #
+    # Get the instance status
+    #
+    
+    elif [[ "$1" == 'status' ]]; then
+
+        echo -e "$WAIT Getting status of instance $BLUE$INSTANCE_NAME$WHITE"
+
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+          jq -r ".Reservations[] | .Instances[] | .InstanceId")
+
+        aws ec2 describe-instance-status --instance-ids $INSTANCE_ID
+
+    #
+    # List all datalabs instances
+    #
+
+    elif [[ "$1" == 'list' ]]; then
+
+        echo -e "$WAIT Getting list of all datalabs instances"
+
+        aws ec2 describe-instances --output table \
+        --query 'Reservations[].Instances[].{Name:Tags[?Key==`Name`]|[0].Value, Instance:InstanceId,State:State.Name,InstanceType:InstanceType}'
+
+    #
+    # Change the instance type
+    #
+
+    elif [[ "$1" == 'type' ]]; then
+
+
+        if [[ -z "$2" ]]; then
+
+            INSTANCE_TYPE=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+              jq -r ".Reservations[] | .Instances[] | .InstanceType")
+
+
+            echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance type: $BLUE$INSTANCE_TYPE$WHITE"
+            echo ""
+            echo "To change instance specify a type, e.g.:"
+            echo "    remote type t2.small"
+
+        else 
+
+            CURR_INSTANCE_TYPE=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+              jq -r ".Reservations[] | .Instances[] | .InstanceType")
+
+            if [[ "$CURR_INSTANCE_TYPE" = "$2" ]]; then
+
+                echo -e "$BLUE Instance type is already $CURR_INSTANCE_TYPE, nothing to do!"
+                exit 1
+            fi
+
+            echo -e " This will change the type of instance $BLUE$INSTANCE_NAME$WHITE"
+            echo -e " from $BLUE$CURR_INSTANCE_TYPE$WHITE to $BLUE$2$WHITE"
+            echo -e "$WARN $RED WARNING: The instance will be shutdown if it is not already"
+            read -p " Are you sure you want to do this? [y/n]" -n 1 -r
+            if [[ ! $REPLY =~ ^[Yy]$ ]]
+            then
+                [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 
+            fi
+
+            echo -e "$WHITE"
+
+            INSTANCE_ID=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+              jq -r ".Reservations[] | .Instances[] | .InstanceId")
+
+            echo -e "$ZAP Sending shutdown command to instance $BLUE$INSTANCE_NAME$WHITE"
+
+            aws ec2 stop-instances --instance-ids $INSTANCE_ID
+            echo "$WAIT Waiting 20 seconds for instance to shutdown..."
+            sleep 20
+
+            echo -e " Setting instance type for $BLUE$INSTANCE_NAME$WHITE to $BLUE$2$WHITE"
+
+            aws ec2 modify-instance-attribute --instance-id $INSTANCE_ID \
+                --instance-type $2 || \
+                echo -e "$ZAP $RED Instance type change failed.$WHITE" && \
+                echo "$WAIT  Waiting another 10 seconds before trying again..." && \
+                sleep 10 #&& \
+                aws ec2 modify-instance-attribute --instance-id $INSTANCE_ID \
+                --instance-type $2
+
+            INSTANCE_TYPE=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+              jq -r ".Reservations[] | .Instances[] | .InstanceType")
+
+            if [[ "$INSTANCE_TYPE" = "$2" ]]; then
+
+                echo -e "$BOOM $GREEN Instance type change to $BLUE$2$GREEN successful$WHITE"
+
+            else
+
+                echo -e "$ZAP $RED Instance type change failed.$WHITE"
+                echo -e "$RED Check the instance name is correct.$WHITE"
+
+            fi
+
+        fi
+
+    #
+    # Shutdown the instance
+    #
+
+    elif [[ "$1" == 'stop' ]]; then
+
+        echo -e "$ZAP Sending shutdown command to instance $BLUE$INSTANCE_NAME$WHITE"
+
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+          jq -r ".Reservations[] | .Instances[] | .InstanceId")
+
+        aws ec2 stop-instances --instance-ids $INSTANCE_ID
+
+    elif [[ -z "$1" ]]; then
+
+        echo "No argument supplied"
+
+    else
+
+        echo "$1 is not a valid command"
+    fi
+}
+
+remote $1 $2
