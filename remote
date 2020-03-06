@@ -5,6 +5,8 @@
 
 : "${AWS_ACCESS_KEY_ID:?}"
 : "${AWS_SECRET_ACCESS_KEY:?}"
+: "${REMOTE_DATALABS_PATH:?"You must set REMOTE_DATALABS_PATH to point to the datalabs path on the remote."}"
+: "${LOCAL_DATALABS_PATH:?"You must set LOCAL_DATALABS_PATH to point to the datalabs path on your local machine"}"
 : "${INSTANCE_NAME:?"You must set the name of your ec2 instance, e.g. datascience_mattupson"}"
 
 WARN=⚠️
