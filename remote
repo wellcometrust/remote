@@ -231,13 +231,34 @@ function remote {
 
         aws ec2 stop-instances --instance-ids $INSTANCE_ID
 
-    elif [[ -z "$1" ]]; then
-
-        echo "No argument supplied"
-
     else
 
-        echo "$1 is not a valid command"
+        echo -e "$BLUE $ZAP Datalabs DataScience EC2 remote control $ZAP"
+        echo ""
+        echo " $WARN  You must set the following ENV VARS:"
+        echo " INSTANCE_NAME            - The name of the instance \(e.g. datascience_base\)"
+        echo " REMOTE_DATALABS_PATH     - Path to the datalabs folder on the remote instance"
+        echo " LOCAL_DATALABS_PATH      - Path to the datalabs repo on the local machine"
+        echo " AWS_ACCESS_KEY_ID        - AWS access key"
+        echo " AWS_SECRET_ACCESS_KEY_ID - AWS secret key"
+        echo ""
+        echo " $STRONG Available commands:"
+        echo ""
+        echo " start   - Starts the instance"
+        echo " git     - Sets up a remote in your local datalabs repo that "
+        echo "           points to the remote repo on the instance. This "
+        echo "           allows you to push code directly to your instance "
+        echo "           from your local datalabs folder with git push ec2"
+        echo " connect - Tries to connect to the instance"
+        echo " id      - Returns the instance id e.g. i-ae23f836a5f3de"
+        echo " status  - Returns the status of the instance"
+        echo " list    - Lists all the datalabs datascience instances"
+        echo " type    - Changes the instance type to that specified as an"
+        echo "           argument \(e.g. t2.small\), otherwise returns the"
+        echo "           instance type"
+        echo " stop    - Stops the instance"
+        echo ""
+
     fi
 }
 
