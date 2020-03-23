@@ -33,7 +33,6 @@ remote help
 
 ```
 
-
 ## Env Variables
 
 The following ENV vars must be set in your local env for this script to run correctly:
