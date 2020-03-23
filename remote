@@ -124,7 +124,8 @@ function remote {
     elif [[ "$1" == 'ip' ]]; then
 
         INSTANCE_ID=$(aws ec2 describe-instances \
-          --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
+          "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
           jq -r ".Reservations[] | .Instances[] | .PublicDnsName")
 
         echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance ip: $BLUE$INSTANCE_ID$WHITE"
