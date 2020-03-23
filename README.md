@@ -23,6 +23,7 @@ remote help
            from your local datalabs folder with git push ec2
  connect - Tries to connect to the instance
  id      - Returns the instance id e.g. i-ae23f836a5f3de
+ ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com
  status  - Returns the status of the instance
  list    - Lists all the datalabs datascience instances
  type    - Changes the instance type to that specified as an

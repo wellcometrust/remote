@@ -118,6 +118,18 @@ function remote {
         echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance id: $BLUE$INSTANCE_ID$WHITE"
 
     #
+    # Return the instance IP
+    #
+
+    elif [[ "$1" == 'ip' ]]; then
+
+        INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=$INSTANCE_NAME"  | \
+          jq -r ".Reservations[] | .Instances[] | .PublicDnsName")
+
+        echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance ip: $BLUE$INSTANCE_ID$WHITE"
+
+    #
     # Get the instance status
     #
     
@@ -265,6 +277,7 @@ function remote {
         echo "           from your local datalabs folder with git push ec2"
         echo " connect - Tries to connect to the instance"
         echo " id      - Returns the instance id e.g. i-ae23f836a5f3de"
+        echo " ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status  - Returns the status of the instance"
         echo " list    - Lists all the datalabs datascience instances"
         echo " type    - Changes the instance type to that specified as an"
