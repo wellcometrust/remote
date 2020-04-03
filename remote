@@ -5,9 +5,10 @@
 
 : "${AWS_ACCESS_KEY_ID:?}"
 : "${AWS_SECRET_ACCESS_KEY:?}"
-: "${REMOTE_DATALABS_PATH:?"You must set REMOTE_DATALABS_PATH to point to the datalabs path on the remote."}"
-: "${LOCAL_DATALABS_PATH:?"You must set LOCAL_DATALABS_PATH to point to the datalabs path on your local machine"}"
+: "${REMOTE_PATH:?"You must set REMOTE_PATH to point at the remote working repo."}"
+: "${LOCAL_PATH:?"You must set LOCAL_PATH to point at the local working repo."}"
 : "${INSTANCE_NAME:?"You must set the name of your ec2 instance, e.g. datascience_mattupson"}"
+: "${PREFIX:?"You must set the prefic used to identify your instances, e.g. datascience"}"
 
 WARN=⚠️
 BOOM=💥
@@ -51,8 +52,8 @@ function remote {
 
     elif [[ "$1" == 'git' ]]; then
 
-        : "${REMOTE_DATALABS_PATH:?"You must set the path to the datalabs folder on the remote (usually /data/datalabs)"}"
-        : "${LOCAL_DATALABS_PATH:?"You must set the path to your local datalabs folder on the remote (usually /data/datalabs)"}"
+        : "${REMOTE_PATH:?"You must set the path to the datalabs folder on the remote (usually /data/datalabs)"}"
+        : "${LOCAL_PATH:?"You must set the path to your local datalabs folder on the remote (usually /data/datalabs)"}"
 
         INSTANCE_IP=$(aws ec2 describe-instances --filters \
         "Name=tag:Name,Values=$INSTANCE_NAME" \
@@ -68,12 +69,12 @@ function remote {
         fi
         
         echo -e "$GREEN Trying to create a remote named ec2 in your local"
-        echo " $LOCAL_DATALABS_PATH repo."
+        echo " $LOCAL_PATH repo."
 
         # Remove the remote if it exists
 
-        (cd $LOCAL_DATALABS_PATH && git remote remove ec2 > /dev/null 2>&1 || true )
-        (cd $LOCAL_DATALABS_PATH && git remote add ec2 ubuntu@$INSTANCE_IP:$REMOTE_DATALABS_PATH) &&
+        (cd $LOCAL_PATH && git remote remove ec2 > /dev/null 2>&1 || true )
+        (cd $LOCAL_PATH && git remote add ec2 ubuntu@$INSTANCE_IP:$REMOTE_PATH) &&
             echo -e "$GREEN ...done$WHITE"; \
             echo ""; \
             echo " You may now push to the remote datalabs repo with:"; \
@@ -154,7 +155,7 @@ function remote {
         echo -e "$WAIT Getting list of all datalabs instances"
 
         aws ec2 describe-instances --output table \
-        --filters "Name=tag:Name,Values=*datascience*" \
+        --filters "Name=tag:Name,Values=*$PREFIX*" \
         "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
         --query 'Reservations[].Instances[].{Name:Tags[?Key==`Name`]|[0].Value, Instance:InstanceId,State:State.Name,InstanceType:InstanceType}'
 
@@ -258,13 +259,15 @@ function remote {
 
     else
 
-        echo -e "$BLUE $ZAP Datalabs DataScience EC2 remote control $ZAP"
+        echo -e "$BLUE $ZAP AWS EC2 instance remote control $ZAP"
         echo ""
         echo " $WARN  You must set the following ENV VARS:"
-        echo " INSTANCE_NAME            - The name of the instance \(e.g. datascience_base\)"
-        echo " REMOTE_DATALABS_PATH     - Path to the datalabs folder on the remote instance"
-        echo " LOCAL_DATALABS_PATH      - Path to the datalabs repo on the local machine"
-        echo " AWS_ACCESS_KEY_ID        - AWS access key"
+        echo " INSTANCE_NAME            - The name of the instance (e.g. datascience_base)"
+        echo " PREFIX                   - The prefix used to identify instances"
+        echo "                            of interest (e.g. datascience)"
+        echo " REMOTE_PATH              - Path to remote working repo"
+        echo " LOCAL_PATH               - Path to local working repo"
+        echo " AWS_ACCESS_KEY_ID        - AWS access key ID"
         echo " AWS_SECRET_ACCESS_KEY_ID - AWS secret key"
         echo ""
         echo " $WARN  All commands will filter terminated instances by default"
@@ -280,7 +283,8 @@ function remote {
         echo " id      - Returns the instance id e.g. i-ae23f836a5f3de"
         echo " ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status  - Returns the status of the instance"
-        echo " list    - Lists all the datalabs datascience instances"
+        echo " list    - Lists all the ec2 instances whose name has a prefix"
+        echo "           described by PREFIX."
         echo " type    - Changes the instance type to that specified as an"
         echo "           argument \(e.g. t2.small\), otherwise returns the"
         echo "           instance type"
