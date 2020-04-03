@@ -144,7 +144,9 @@ function remote {
           "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
           jq -r ".Reservations[] | .Instances[] | .InstanceId")
 
-        aws ec2 describe-instance-status --instance-ids $INSTANCE_ID
+        aws ec2 describe-instance-status --instance-ids $INSTANCE_ID \
+            --output table \
+            --query 'InstanceStatuses[].{InstanceId:InstanceId, AvailabilityZone:AvailabilityZone,InstanceStatus:InstanceStatus.Status,SystemStatus:SystemStatus.Status}'
 
     #
     # List all datalabs instances
