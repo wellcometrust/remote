@@ -8,7 +8,7 @@
 : "${REMOTE_PATH:?"You must set REMOTE_PATH to point at the remote working repo."}"
 : "${LOCAL_PATH:?"You must set LOCAL_PATH to point at the local working repo."}"
 : "${INSTANCE_NAME:?"You must set the name of your ec2 instance, e.g. datascience_mattupson"}"
-: "${PREFIX:?"You must set the prefic used to identify your instances, e.g. datascience"}"
+: "${FILTER_PREFIX:?"You must set the prefic used to identify your instances, e.g. datascience"}"
 
 WARN=⚠️
 BOOM=💥
@@ -157,7 +157,7 @@ function remote {
         echo -e "$WAIT Getting list of all datalabs instances"
 
         aws ec2 describe-instances --output table \
-        --filters "Name=tag:Name,Values=*$PREFIX*" \
+        --filters "Name=tag:Name,Values=*$FILTER_PREFIX*" \
         "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
         --query 'Reservations[].Instances[].{Name:Tags[?Key==`Name`]|[0].Value, Instance:InstanceId,State:State.Name,InstanceType:InstanceType}'
 
@@ -265,7 +265,7 @@ function remote {
         echo ""
         echo " $WARN  You must set the following ENV VARS:"
         echo " INSTANCE_NAME            - The name of the instance (e.g. datascience_base)"
-        echo " PREFIX                   - The prefix used to identify instances"
+        echo " FILTER_PREFIX            - The prefix used to identify instances"
         echo "                            of interest (e.g. datascience)"
         echo " REMOTE_PATH              - Path to remote working repo"
         echo " LOCAL_PATH               - Path to local working repo"
@@ -286,7 +286,7 @@ function remote {
         echo " ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status  - Returns the status of the instance"
         echo " list    - Lists all the ec2 instances whose name has a prefix"
-        echo "           described by PREFIX."
+        echo "           described by FILTER_PREFIX."
         echo " type    - Changes the instance type to that specified as an"
         echo "           argument \(e.g. t2.small\), otherwise returns the"
         echo "           instance type"

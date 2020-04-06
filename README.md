@@ -9,8 +9,8 @@ remote help
 
  ⚠️  You must set the following ENV VARS:
  INSTANCE_NAME            - The name of the instance (e.g. datascience_base)
- PREFIX                   - The prefix used to identify instances
-                            of interest (e.g. datascience)
+ FILTER_PREFIX            - The prefix used to identify instances of interest 
+                            (e.g. datascience)
  REMOTE_PATH              - Path to remote working repo
  LOCAL_PATH               - Path to local working repo
  AWS_ACCESS_KEY_ID        - AWS access key ID
@@ -30,7 +30,7 @@ remote help
  ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com
  status  - Returns the status of the instance
  list    - Lists all the ec2 instances whose name has a prefix
-           described by PREFIX.
+           described by FILTER_PREFIX.
  type    - Changes the instance type to that specified as an
            argument \(e.g. t2.small\), otherwise returns the
            instance type
@@ -44,7 +44,7 @@ The following ENV vars must be set in your local env for this script to run corr
 |ENV VAR|explanataion|Nominal value|
 |---|---|---|
 |INSTANCE_NAME|Name of the instance you wish to communicate with. Note that this requires that the tag `Name` is set on the instance of interest|datascience_base|
-|PREFIX|Prefix used to identify instances for a given task|datascience|
+|FILTER_PREFIX|Prefix used to identify instances for a given task|datascience|
 |REMOTE_PATH|Path to remote working repository|/data/datalabs|
 |LOCAL_PATH|Path to local working repository|~/datalabs|
 |AWS_ACCESS_KEY_ID|AWS credentials||
