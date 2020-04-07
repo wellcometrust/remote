@@ -3,12 +3,7 @@
 
 # Check whether credentials are set
 
-: "${AWS_ACCESS_KEY_ID:?}"
-: "${AWS_SECRET_ACCESS_KEY:?}"
-: "${REMOTE_PATH:?"You must set REMOTE_PATH to point at the remote working repo."}"
-: "${LOCAL_PATH:?"You must set LOCAL_PATH to point at the local working repo."}"
 : "${INSTANCE_NAME:?"You must set the name of your ec2 instance, e.g. datascience_mattupson"}"
-: "${FILTER_PREFIX:?"You must set the prefic used to identify your instances, e.g. datascience"}"
 
 WARN=⚠️
 BOOM=💥
@@ -47,13 +42,13 @@ function remote {
             echo -e "$STRONG $GREEN Instance $BLUE$INSTANCE_NAME$GREEN started$WHITE"
 
     #
-    # Create an ec2 remote in your local datalabs folder
+    # Create an ec2 remote in your local repo
     #
 
     elif [[ "$1" == 'git' ]]; then
 
-        : "${REMOTE_PATH:?"You must set the path to the datalabs folder on the remote (usually /data/datalabs)"}"
-        : "${LOCAL_PATH:?"You must set the path to your local datalabs folder on the remote (usually /data/datalabs)"}"
+        : "${REMOTE_PATH:?"You must set the path to the remote working repo."}"
+        : "${LOCAL_PATH:?"You must set the path to the local working repo."}"
 
         INSTANCE_IP=$(aws ec2 describe-instances --filters \
         "Name=tag:Name,Values=$INSTANCE_NAME" \
@@ -154,7 +149,9 @@ function remote {
 
     elif [[ "$1" == 'list' ]]; then
 
-        echo -e "$WAIT Getting list of all datalabs instances"
+        : "${FILTER_PREFIX:?"You must set a prefix by which to filter instances."}"
+
+        echo -e "$WAIT Getting list of all instances that match $FILTER_PREFIX"
 
         aws ec2 describe-instances --output table \
         --filters "Name=tag:Name,Values=*$FILTER_PREFIX*" \
@@ -265,12 +262,20 @@ function remote {
         echo ""
         echo " $WARN  You must set the following ENV VARS:"
         echo " INSTANCE_NAME            - The name of the instance (e.g. datascience_base)"
+        echo ""
+        echo " To make use of remote list you can optionally set:"
         echo " FILTER_PREFIX            - The prefix used to identify instances"
         echo "                            of interest (e.g. datascience)"
+        echo ""
+        echo " Optionally you can also set the following if you intend to use"
+        echo " the remote git command"
         echo " REMOTE_PATH              - Path to remote working repo"
         echo " LOCAL_PATH               - Path to local working repo"
-        echo " AWS_ACCESS_KEY_ID        - AWS access key ID"
-        echo " AWS_SECRET_ACCESS_KEY_ID - AWS secret key"
+        echo ""
+        echo " $WARN  You must also have your AWS credentials set either locally"
+        echo " as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY_ID or as"
+        echo " AWS_PROFILE, having first set your credentials with aws, usually"
+        echo " in ~/.aws/credentials and ~/.aws/config."
         echo ""
         echo " $WARN  All commands will filter terminated instances by default"
         echo ""
