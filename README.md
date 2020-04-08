@@ -9,12 +9,20 @@ remote help
 
  ⚠️  You must set the following ENV VARS:
  INSTANCE_NAME            - The name of the instance (e.g. datascience_base)
- FILTER_PREFIX            - The prefix used to identify instances of interest 
-                            (e.g. datascience)
+
+ To make use of remote list you can optionally set:
+ FILTER_PREFIX            - The prefix used to identify instances
+                            of interest (e.g. datascience)
+
+ Optionally you can also set the following if you intend to use
+ the remote git command
  REMOTE_PATH              - Path to remote working repo
  LOCAL_PATH               - Path to local working repo
- AWS_ACCESS_KEY_ID        - AWS access key ID
- AWS_SECRET_ACCESS_KEY_ID - AWS secret key
+
+ ⚠️  You must also have your AWS credentials set either locally
+ as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY_ID or as
+ AWS_PROFILE, having first set your credentials with aws, usually
+ in ~/.aws/credentials and ~/.aws/config.
 
  ⚠️  All commands will filter terminated instances by default
 
@@ -35,19 +43,21 @@ remote help
            argument \(e.g. t2.small\), otherwise returns the
            instance type
  stop    - Stops the instance
+
+
 ```
 
 ## Env Variables
 
 The following ENV vars must be set in your local env for this script to run correctly:
 
-|ENV VAR|explanataion|Nominal value|
-|---|---|---|
-|INSTANCE_NAME|Name of the instance you wish to communicate with. Note that this requires that the tag `Name` is set on the instance of interest|datascience_base|
-|FILTER_PREFIX|Prefix used to identify instances for a given task|datascience|
-|REMOTE_PATH|Path to remote working repository|/data/datalabs|
-|LOCAL_PATH|Path to local working repository|~/datalabs|
-|AWS_ACCESS_KEY_ID|AWS credentials||
-|AWS_SECRET_ACCESS_KEY|AWS credentials||
+|ENV VAR|explanataion|Nominal value|Required?|
+|---|---|---|---|
+|INSTANCE_NAME|Name of the instance you wish to communicate with. Note that this requires that the tag `Name` is set on the instance of interest|datascience_base|Yes|
+|FILTER_PREFIX|Prefix used to identify instances for a given task|datascience|for `remote list`|
+|REMOTE_PATH|Path to remote working repository|/data/datalabs|for `remote git`|
+|LOCAL_PATH|Path to local working repository|~/datalabs|for `remtoe git`|
+
+NOTE: You must also have permission to control ec2 instances either by setting AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY or by setting AWS_PROFILE and creating a corresponding profile in `~/.aws/config` and `~/.aws/credentials`.
 
 
