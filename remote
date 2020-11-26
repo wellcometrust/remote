@@ -264,7 +264,8 @@ function remote {
 
         aws ec2 describe-instance-types \
             --output table \
-            --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}"
+            --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}" \
+            --filters "Name=instance-type,Values=p*,c*,m*"
 
     else
 
