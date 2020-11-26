@@ -261,11 +261,15 @@ function remote {
     #
 
     elif [[ "$1" == 'instances' ]]; then
-
+        if [[ "$2" ]]; then
+            FILTER_INSTANCES="$2"
+        else
+            FILTER_INSTANCES=c*,p*,r*
+        fi
         aws ec2 describe-instance-types \
             --output table \
             --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}" \
-            --filters "Name=instance-type,Values=p*,c*,m*"
+            --filters "Name=instance-type,Values=$FILTER_INSTANCES"
 
     else
 
@@ -308,6 +312,8 @@ function remote {
         echo "                   instance type"
         echo " stop            - Stops the instance"
         echo " instances       - Lists information about available ec2 instances"
+        echo "                   by default filter c*,p*,r* but custom filter can"
+        echo "                   be passed as second argument e.g. r4\*"
         echo ""
 
     fi
