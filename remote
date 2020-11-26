@@ -260,7 +260,7 @@ function remote {
     # List instance types
     #
 
-    elif [[ "$1" == 'list-instances' ]]; then
+    elif [[ "$1" == 'instances' ]]; then
 
         aws ec2 describe-instance-types \
             --output table \
@@ -306,7 +306,7 @@ function remote {
         echo "                   argument \(e.g. t2.small\), otherwise returns the"
         echo "                   instance type"
         echo " stop            - Stops the instance"
-        echo " list-instances  - Lists information about available ec2 instances"
+        echo " instances       - Lists information about available ec2 instances"
         echo ""
 
     fi
