@@ -256,6 +256,21 @@ function remote {
 
         aws ec2 stop-instances --instance-ids $INSTANCE_ID
 
+    #
+    # List instance types
+    #
+
+    elif [[ "$1" == 'instances' ]]; then
+        if [[ "$2" ]]; then
+            FILTER_INSTANCES="$2"
+        else
+            FILTER_INSTANCES=c*,p*,r*
+        fi
+        aws ec2 describe-instance-types \
+            --output table \
+            --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}" \
+            --filters "Name=instance-type,Values=$FILTER_INSTANCES"
+
     else
 
         echo -e "$BLUE $ZAP AWS EC2 instance remote control $ZAP"
@@ -281,21 +296,24 @@ function remote {
         echo ""
         echo " $STRONG Available commands:"
         echo ""
-        echo " start   - Starts the instance"
-        echo " git     - Sets up a remote in your local datalabs repo that "
-        echo "           points to the remote repo on the instance. This "
-        echo "           allows you to push code directly to your instance "
-        echo "           from your local datalabs folder with git push ec2"
-        echo " connect - Tries to connect to the instance"
-        echo " id      - Returns the instance id e.g. i-ae23f836a5f3de"
-        echo " ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
-        echo " status  - Returns the status of the instance"
-        echo " list    - Lists all the ec2 instances whose name has a prefix"
-        echo "           described by FILTER_PREFIX."
-        echo " type    - Changes the instance type to that specified as an"
-        echo "           argument \(e.g. t2.small\), otherwise returns the"
-        echo "           instance type"
-        echo " stop    - Stops the instance"
+        echo " start           - Starts the instance"
+        echo " git             - Sets up a remote in your local datalabs repo that "
+        echo "                   points to the remote repo on the instance. This "
+        echo "                   allows you to push code directly to your instance "
+        echo "                   from your local datalabs folder with git push ec2"
+        echo " connect         - Tries to connect to the instance"
+        echo " id              - Returns the instance id e.g. i-ae23f836a5f3de"
+        echo " ip              - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
+        echo " status          - Returns the status of the instance"
+        echo " list            - Lists all the ec2 instances whose name has a prefix"
+        echo "                   described by FILTER_PREFIX."
+        echo " type            - Changes the instance type to that specified as an"
+        echo "                   argument \(e.g. t2.small\), otherwise returns the"
+        echo "                   instance type"
+        echo " stop            - Stops the instance"
+        echo " instances       - Lists information about available ec2 instances"
+        echo "                   by default filter c*,p*,r* but custom filter can"
+        echo "                   be passed as second argument e.g. r4\*"
         echo ""
 
     fi
