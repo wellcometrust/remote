@@ -20,6 +20,12 @@ WHITE="\e[0m"
 
 function remote {
 
+    if [[ "$2" == '-v' ]] || [[ "$2" == '--verbose' ]]; then
+
+	VERBOSE=1
+
+    fi
+
     #
     # Start a stopped instance
     #
@@ -81,7 +87,7 @@ function remote {
     #
     
     elif [[ "$1" == 'connect' ]]; then
-    
+
         INSTANCE_IP=$(aws ec2 describe-instances --filters \
         "Name=tag:Name,Values=$INSTANCE_NAME" \
         "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
@@ -111,7 +117,11 @@ function remote {
           "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
           jq -r ".Reservations[] | .Instances[] | .InstanceId")
 
-        echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance id: $BLUE$INSTANCE_ID$WHITE"
+	    if [[ $VERBOSE ]]; then
+                echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance id: $BLUE$INSTANCE_ID$WHITE"
+	    else
+            	echo -e "$INSTANCE_ID"
+	    fi
 
     #
     # Return the instance IP
@@ -119,12 +129,16 @@ function remote {
 
     elif [[ "$1" == 'ip' ]]; then
 
-        INSTANCE_ID=$(aws ec2 describe-instances \
+        INSTANCE_IP=$(aws ec2 describe-instances \
           --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
           "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
           jq -r ".Reservations[] | .Instances[] | .PublicDnsName")
 
-        echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance ip: $BLUE$INSTANCE_ID$WHITE"
+	    if [[ $VERBOSE ]]; then
+            	echo -e "$DONE  $BLUE$INSTANCE_NAME$WHITE instance ip: $BLUE$INSTANCE_IP$WHITE"
+	    else
+            	echo -e "$INSTANCE_IP"
+	    fi
 
     #
     # Get the instance status
@@ -314,6 +328,10 @@ function remote {
         echo " instances       - Lists information about available ec2 instances"
         echo "                   by default filter c*,p*,r* but custom filter can"
         echo "                   be passed as second argument e.g. r4\*"
+        echo ""
+        echo " $STRONG Available options:"
+        echo ""
+        echo " -v / --verbose  - Commands return verbose output"
         echo ""
 
     fi
