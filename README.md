@@ -44,7 +44,9 @@ remote help
            instance type
  stop    - Stops the instance
 
+ 💪 Available options:
 
+ -v / --verbose  - Commands return verbose output
 ```
 
 ## Env Variables
