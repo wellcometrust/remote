@@ -147,7 +147,7 @@ function remote {
     # List all datalabs instances
     #
 
-    elif [[ "$1" == 'list' ]]; then
+    elif [[ "$1" =~ 'list' ]] || [[ "$1" =~ 'ls' ]]; then
 
         : "${FILTER_PREFIX:?"You must set a prefix by which to filter instances."}"
 
@@ -305,7 +305,7 @@ function remote {
         echo " id              - Returns the instance id e.g. i-ae23f836a5f3de"
         echo " ip              - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status          - Returns the status of the instance"
-        echo " list            - Lists all the ec2 instances whose name has a prefix"
+        echo " list | ls       - Lists all the ec2 instances whose name has a prefix"
         echo "                   described by FILTER_PREFIX."
         echo " type            - Changes the instance type to that specified as an"
         echo "                   argument \(e.g. t2.small\), otherwise returns the"
