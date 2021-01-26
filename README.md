@@ -22,7 +22,7 @@ remote help
  ⚠️  You must also have your AWS credentials set either locally
  as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY_ID or as
  AWS_PROFILE, having first set your credentials with aws, usually
- in ~/.aws/credentials and ~/.aws/config.
+ in ~/.aws/credentials and ~/.aws/config using `aws configure`.
 
  ⚠️  All commands will filter terminated instances by default
 
