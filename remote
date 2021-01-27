@@ -96,8 +96,15 @@ function remote {
         n=0
         until [ $n -ge 5 ]
         do
-            ssh ubuntu@$INSTANCE_IP && break || \
-                echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+
+
+	        if [[ $VERBOSE ]]; then
+                ssh -v ubuntu@$INSTANCE_IP && break || \
+                    echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+	        else
+                ssh ubuntu@$INSTANCE_IP && break || \
+                    echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+	        fi
             n=$[$n+1]
             if [[ "$n" = 5 ]]; then 
                 echo -e "$WARN $RED Could not connect to instance $BLUE$INSTANCE_NAME$WHITE."
