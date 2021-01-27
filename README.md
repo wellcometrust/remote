@@ -3,8 +3,6 @@
 A script to make managing EC2 instances easier.
 
 ```
-remote help
-
  ⚡ AWS EC2 instance remote control ⚡
 
  ⚠️  You must set the following ENV VARS:
