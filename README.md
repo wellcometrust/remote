@@ -20,31 +20,31 @@ A script to make managing EC2 instances easier.
  ⚠️  You must also have your AWS credentials set either locally
  as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY_ID or as
  AWS_PROFILE, having first set your credentials with aws, usually
- in ~/.aws/credentials and ~/.aws/config.
+ in ~/.aws/credentials and ~/.aws/config using `aws configure`.
 
  ⚠️  All commands will filter terminated instances by default
 
  💪 Available commands:
 
- start           - Starts the instance
- git             - Sets up a remote in your local datalabs repo that 
-                   points to the remote repo on the instance. This 
-                   allows you to push code directly to your instance 
-                   from your local datalabs folder with git push ec2
- connect         - Tries to connect to the instance
- id              - Returns the instance id e.g. i-ae23f836a5f3de
- ip              - Returns the instance public address ec2-x-x-x-x...amazonaws.com
- status          - Returns the status of the instance
- list | ls       - Lists all the ec2 instances whose name has a prefix
-                   described by FILTER_PREFIX.
- type            - Changes the instance type to that specified as an
-                   argument \(e.g. t2.small\), otherwise returns the
-                   instance type
- stop            - Stops the instance
- instances       - Lists information about available ec2 instances
-                   by default filter c*,p*,r* but custom filter can
-                   be passed as second argument e.g. r4\*
+ start   - Starts the instance
+ git     - Sets up a remote in your local datalabs repo that 
+           points to the remote repo on the instance. This 
+           allows you to push code directly to your instance 
+           from your local datalabs folder with git push ec2
+ connect - Tries to connect to the instance
+ id      - Returns the instance id e.g. i-ae23f836a5f3de
+ ip      - Returns the instance public address ec2-x-x-x-x...amazonaws.com
+ status  - Returns the status of the instance
+ list    - Lists all the ec2 instances whose name has a prefix
+           described by FILTER_PREFIX.
+ type    - Changes the instance type to that specified as an
+           argument \(e.g. t2.small\), otherwise returns the
+           instance type
+ stop    - Stops the instance
 
+ 💪 Available options:
+
+ -v / --verbose  - Commands return verbose output
 ```
 
 ## Env Variables
