@@ -20,38 +20,51 @@ WHITE="\e[0m"
 
 function remote {
 
-    if [[ "$2" == '-v' ]] || [[ "$2" == '--verbose' ]]; then
-
-	VERBOSE=1
-
-    fi
+    while [[ $# -gt 1 ]]
+    do
+    echo $1
+    key="$1"
+    
+    case $key in
+        -v|--verbose)
+        VERBOSE=1
+        shift # past argument
+        ;;
+        # unknown option
+        *)
+        ;;
+    esac
+    shift # past argument or value
+    done
 
     #
     # Start a stopped instance
     #
+    case "$1" in
 
-    if [[ "$1" == 'start' ]]; then
+        "start")
 
-        INSTANCE_ID=$(aws ec2 describe-instances \
-          --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
-        "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
-        jq -r ".Reservations[] | .Instances[] | .InstanceId")
+            INSTANCE_ID=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
+            "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
+            jq -r ".Reservations[] | .Instances[] | .InstanceId")
 
-        echo -e "$ZAP Sending start signal to instance $BLUE$INSTANCE_NAME$WHITE"
+            echo -e "$ZAP Sending start signal to instance $BLUE$INSTANCE_NAME$WHITE"
 
-        INSTANCE_IP=$(aws ec2 describe-instances --filters \
-        "Name=tag:Name,Values=$INSTANCE_NAME" \
-        "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
-        jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
+            INSTANCE_IP=$(aws ec2 describe-instances --filters \
+            "Name=tag:Name,Values=$INSTANCE_NAME" \
+            "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
+            jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
 
-        aws ec2 start-instances --instance-ids $INSTANCE_ID && \
-            echo -e "$STRONG $GREEN Instance $BLUE$INSTANCE_NAME$GREEN started$WHITE"
+            aws ec2 start-instances --instance-ids $INSTANCE_ID && \
+                echo -e "$STRONG $GREEN Instance $BLUE$INSTANCE_NAME$GREEN started$WHITE"
+                ;;
 
     #
     # Create an ec2 remote in your local repo
     #
 
-    elif [[ "$1" == 'git' ]]; then
+    "down")
 
         : "${REMOTE_PATH:?"You must set the path to the remote working repo."}"
         : "${LOCAL_PATH:?"You must set the path to the local working repo."}"
@@ -80,13 +93,14 @@ function remote {
             echo ""; \
             echo " You may now push to the remote datalabs repo with:"; \
             echo "     git push ec2"
+                    ;;
 
 
     #
     # Connect to started instance
     #
     
-    elif [[ "$1" == 'connect' ]]; then
+    "connect")
 
         INSTANCE_IP=$(aws ec2 describe-instances --filters \
         "Name=tag:Name,Values=$INSTANCE_NAME" \
@@ -112,12 +126,13 @@ function remote {
             fi
             sleep 10
         done
+        ;;
 
     #
     # Return the instance ID
     #
 
-    elif [[ "$1" == 'id' ]]; then
+    "id")
 
         INSTANCE_ID=$(aws ec2 describe-instances \
           --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
@@ -129,12 +144,13 @@ function remote {
 	    else
             	echo -e "$INSTANCE_ID"
 	    fi
+        ;;
 
     #
     # Return the instance IP
     #
 
-    elif [[ "$1" == 'ip' ]]; then
+    "ip")
 
         INSTANCE_IP=$(aws ec2 describe-instances \
           --filters "Name=tag:Name,Values=$INSTANCE_NAME" \
@@ -147,11 +163,13 @@ function remote {
             	echo -e "$INSTANCE_IP"
 	    fi
 
+	    ;;
+
     #
     # Get the instance status
     #
     
-    elif [[ "$1" == 'status' ]]; then
+    "status")
 
         echo -e "$WAIT Getting status of instance $BLUE$INSTANCE_NAME$WHITE"
 
@@ -163,12 +181,16 @@ function remote {
         aws ec2 describe-instance-status --instance-ids $INSTANCE_ID \
             --output table \
             --query 'InstanceStatuses[].{InstanceId:InstanceId, AvailabilityZone:AvailabilityZone,InstanceStatus:InstanceStatus.Status,SystemStatus:SystemStatus.Status}'
+            ;;
 
     #
     # List all datalabs instances
     #
 
-    elif [[ "$1" =~ 'list' ]] || [[ "$1" =~ 'ls' ]]; then
+    #"list|ls")
+    "list")
+
+    #elif [[ "$1" =~ 'list' ]] || [[ "$1" =~ 'ls' ]]; then
 
         : "${FILTER_PREFIX:?"You must set a prefix by which to filter instances."}"
 
@@ -178,12 +200,14 @@ function remote {
         --filters "Name=tag:Name,Values=*$FILTER_PREFIX*" \
         "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
         --query 'Reservations[].Instances[].{Name:Tags[?Key==`Name`]|[0].Value, Instance:InstanceId,State:State.Name,InstanceType:InstanceType}'
+                #;;&
+                ;;
 
     #
     # Change the instance type
     #
 
-    elif [[ "$1" == 'type' ]]; then
+    "type")
 
 
         if [[ -z "$2" ]]; then
@@ -261,12 +285,13 @@ function remote {
             fi
 
         fi
+        ;;
 
     #
     # Shutdown the instance
     #
 
-    elif [[ "$1" == 'stop' ]]; then
+    "stop")
 
         echo -e "$ZAP Sending shutdown command to instance $BLUE$INSTANCE_NAME$WHITE"
 
@@ -276,12 +301,14 @@ function remote {
           jq -r ".Reservations[] | .Instances[] | .InstanceId")
 
         aws ec2 stop-instances --instance-ids $INSTANCE_ID
+        ;;
 
     #
     # List instance types
     #
 
-    elif [[ "$1" == 'instances' ]]; then
+    "instances")
+
         if [[ "$2" ]]; then
             FILTER_INSTANCES="$2"
         else
@@ -291,8 +318,9 @@ function remote {
             --output table \
             --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}" \
             --filters "Name=instance-type,Values=$FILTER_INSTANCES"
+                    ;;
 
-    else
+                *)
 
         echo -e "$BLUE $ZAP AWS EC2 instance remote control $ZAP"
         echo ""
@@ -341,7 +369,7 @@ function remote {
         echo " -v / --verbose  - Commands return verbose output"
         echo ""
 
-    fi
+    esac
 }
 
 remote $1 $2
