@@ -292,6 +292,11 @@ function remote {
             --query "InstanceTypes[].{Instance:InstanceType,Memory:MemoryInfo.SizeInMiB,vCPUs:VCpuInfo.DefaultVCpus,GPUs:GpuInfo.Gpus[0].Count}" \
             --filters "Name=instance-type,Values=$FILTER_INSTANCES"
 
+	elif [[ "$1" == 'jobs' ]]; then
+		aws sagemaker list-training-jobs \
+			--output table \
+			--query "TrainingJobSummaries[:10].{JobName:TrainingJobName,Status:TrainingJobStatus}"
+
     else
 
         echo -e "$BLUE $ZAP AWS EC2 instance remote control $ZAP"
@@ -335,7 +340,8 @@ function remote {
         echo " instances       - Lists information about available ec2 instances"
         echo "                   by default filter c*,p*,r* but custom filter can"
         echo "                   be passed as second argument e.g. r4\*"
-        echo ""
+        echo " jobs            - Lists sagemaker jobs and their progress"
+		echo ""
         echo " $STRONG Available options:"
         echo ""
         echo " -v / --verbose  - Commands return verbose output"
