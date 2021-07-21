@@ -302,6 +302,21 @@ function remote {
 					jq '.TrainingJobSummaries[].TrainingJobName')
 			fi
 			aws sagemaker stop-training-job --training-job-name "$JOB_NAME"
+		elif [[ "$2" == 'logs' ]]; then
+			if [[ "$3" ]]; then
+				JOB_PREFIX="$3"
+				LOG_STREAM_NAME=$(aws logs describe-log-streams \
+					--log-group-name /aws/sagemaker/TrainingJobs \
+					--descending --log-stream-name-prefix $JOB_PREFIX | jq --raw-output '.logStreams[0].logStreamName'
+				)
+			else
+				LOG_STREAM_NAME=$(aws logs describe-log-streams \
+					--log-group-name /aws/sagemaker/TrainingJobs \
+					--descending | jq --raw-output '.logStreams[0].logStreamName')
+			fi
+			aws logs get-log-events \
+				--log-group-name /aws/sagemaker/TrainingJobs \
+				--log-stream-name $LOG_STREAM_NAME | jq '.events[].message'
 		else
 			aws sagemaker list-training-jobs \
 				--output table \
@@ -332,26 +347,27 @@ function remote {
         echo ""
         echo " $STRONG Available commands:"
         echo ""
-        echo " start               - Starts the instance"
-        echo " git                 - Sets up a remote in your local datalabs repo that "
-        echo "                       points to the remote repo on the instance. This "
-        echo "                       allows you to push code directly to your instance "
-        echo "                       from your local datalabs folder with git push ec2"
-        echo " connect             - Tries to connect to the instance"
-        echo " id                  - Returns the instance id e.g. i-ae23f836a5f3de"
-        echo " ip                  - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
-        echo " status              - Returns the status of the instance"
-        echo " list | ls           - Lists all the ec2 instances whose name has a prefix"
-        echo "                       described by FILTER_PREFIX."
-        echo " type                - Changes the instance type to that specified as an"
-        echo "                       argument \(e.g. t2.small\), otherwise returns the"
-        echo "                       instance type"
-        echo " stop                - Stops the instance"
-        echo " instances           - Lists information about available ec2 instances"
-        echo "                       by default filter c*,p*,r* but custom filter can"
-        echo "                       be passed as second argument e.g. r4\*"
-        echo " jobs                - Lists sagemaker jobs and their progress"
-		echo " jobs stop JOB_NAME  - Stops sagemaker jobs that starts with JOB_NAME"
+        echo " start                - Starts the instance"
+        echo " git                  - Sets up a remote in your local datalabs repo that "
+        echo "                        points to the remote repo on the instance. This "
+        echo "                        allows you to push code directly to your instance "
+        echo "                        from your local datalabs folder with git push ec2"
+        echo " connect              - Tries to connect to the instance"
+        echo " id                   - Returns the instance id e.g. i-ae23f836a5f3de"
+        echo " ip                   - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
+        echo " status               - Returns the status of the instance"
+        echo " list | ls            - Lists all the ec2 instances whose name has a prefix"
+        echo "                        described by FILTER_PREFIX."
+        echo " type                 - Changes the instance type to that specified as an"
+        echo "                        argument \(e.g. t2.small\), otherwise returns the"
+        echo "                        instance type"
+        echo " stop                 - Stops the instance"
+        echo " instances            - Lists information about available ec2 instances"
+        echo "                        by default filter c*,p*,r* but custom filter can"
+        echo "                        be passed as second argument e.g. r4\*"
+        echo " jobs                 - Lists sagemaker jobs and their progress"
+		echo " jobs stop JOB_NAME   - Stops sagemaker jobs that starts with JOB_NAME"
+		echo " jobs logs JOB_PREFIX - Gets logs for sagemaker jobs with prefix JOB_PREFIX"
 		echo ""
         echo " $STRONG Available options:"
         echo ""
