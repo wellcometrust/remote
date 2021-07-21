@@ -296,10 +296,10 @@ function remote {
 		if [[ "$2" == 'stop' ]]; then
 			if [[ "$3" ]]; then
 				JOB_NAME=$(aws sagemaker list-training-jobs --status-equals "InProgress" --name-contains "$3" --max-items 1 | \
-					jq '.TrainingJobSummaries[].TrainingJobName')
+					jq -r '.TrainingJobSummaries[].TrainingJobName')
 			else
 				JOB_NAME=$(aws sagemaker list-training-jobs --status-equals "InProgress" --max-items 1 | \
-					jq '.TrainingJobSummaries[].TrainingJobName')
+					jq -r '.TrainingJobSummaries[].TrainingJobName')
 			fi
 			aws sagemaker stop-training-job --training-job-name "$JOB_NAME"
 		else
