@@ -312,7 +312,7 @@ function remote {
 			else
 				LOG_STREAM_NAME=$(aws logs describe-log-streams \
 					--log-group-name /aws/sagemaker/TrainingJobs \
-					--descending | jq --raw-output '.logStreams[0].logStreamName')
+					--descending --order-by LastEventTime | jq --raw-output '.logStreams[0].logStreamName')
 			fi
 			aws logs get-log-events \
 				--log-group-name /aws/sagemaker/TrainingJobs \
