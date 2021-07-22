@@ -324,12 +324,12 @@ function remote {
 				--query "TrainingJobSummaries[:10].{JobName:TrainingJobName,Status:TrainingJobStatus}"
 		fi
 	elif [[ "$1" == 'price' ]]; then
-		INSTANCE_TYPE=$2
-		AMOUNT=$(curl -s \
-			--request GET \
-          	--url https://api.vantage.sh/v1/products/aws-ec2-$INSTANCE_TYPE/prices/aws-ec2-$INSTANCE_TYPE-eu_west_1-on_demand-linux \
-          	--header 'Accept: application/json' \
-			--header 'Authorization: Bearer sd4QN9r9YuOEAUqtZ75xz2dvHFQf7i_4EU1Wql3gih0' | jq -r '.amount')
+        INSTANCE_TYPE=$2
+        AMOUNT=$(curl -s \
+            --request GET \
+            --url https://api.vantage.sh/v1/products/aws-ec2-$INSTANCE_TYPE/prices/aws-ec2-$INSTANCE_TYPE-eu_west_1-on_demand-linux \
+            --header 'Accept: application/json' \
+            --header 'Authorization: Bearer sd4QN9r9YuOEAUqtZ75xz2dvHFQf7i_4EU1Wql3gih0' | jq -r '.amount')
 		echo "Instance $INSTANCE_TYPE costs $AMOUNT\$ per hour"
 	else
         echo -e "$BLUE $ZAP AWS EC2 instance remote control $ZAP"
