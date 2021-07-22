@@ -365,7 +365,7 @@ function remote {
         echo "                        points to the remote repo on the instance. This "
         echo "                        allows you to push code directly to your instance "
         echo "                        from your local datalabs folder with git push ec2"
-        echo " connect              - Tries to connect to the instance"
+        echo " connect              - Tries to connect to the instance. Use -p for port forwarding"
         echo " id                   - Returns the instance id e.g. i-ae23f836a5f3de"
         echo " ip                   - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status               - Returns the status of the instance"
@@ -383,10 +383,6 @@ function remote {
 		echo " jobs logs JOB_PREFIX - Gets logs for sagemaker jobs with prefix JOB_PREFIX"
 		echo " price INSTANCE_TYPE  - Get price of instance type e.g. p2_xlarge"
 		echo ""
-        echo " $STRONG Available options:"
-        echo ""
-        echo " -v / --verbose  - Commands return verbose output"
-        echo ""
 
     fi
 }
