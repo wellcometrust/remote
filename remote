@@ -19,13 +19,6 @@ RED="\e[0;31m"
 WHITE="\e[0m"
 
 function remote {
-
-    if [[ "$2" == '-v' ]] || [[ "$2" == '--verbose' ]]; then
-
-	VERBOSE=1
-
-    fi
-
     #
     # Start a stopped instance
     #
@@ -93,18 +86,31 @@ function remote {
         "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" | \
         jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicDnsName')
 
+        if [[ "$2" == '-p' ]]; then
+            PORT_FORWARD=$3
+        fi
+
         n=0
         until [ $n -ge 5 ]
         do
 
-
 	        if [[ $VERBOSE ]]; then
-                ssh -v ubuntu@$INSTANCE_IP && break || \
-                    echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
-	        else
-                ssh ubuntu@$INSTANCE_IP && break || \
-                    echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
-	        fi
+                if [[ $PORT_FORWARD ]]; then
+                    ssh -v -L $PORT_FORWARD ubuntu@$INSTANCE_IP && break || \
+                        echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+				else
+                    ssh -v ubuntu@$INSTANCE_IP && break || \
+                        echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+                fi
+            else
+                if [[ $PORT_FORWARD ]]; then
+                    ssh -L $PORT_FORWARD ubuntu@$INSTANCE_IP && break || \
+                        echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+				else
+                    ssh ubuntu@$INSTANCE_IP && break || \
+                        echo -e "$WARN $RED Connection failed, trying again $[5-$n] times.$WHITE" 
+                fi
+            fi
             n=$[$n+1]
             if [[ "$n" = 5 ]]; then 
                 echo -e "$WARN $RED Could not connect to instance $BLUE$INSTANCE_NAME$WHITE."
@@ -359,7 +365,7 @@ function remote {
         echo "                        points to the remote repo on the instance. This "
         echo "                        allows you to push code directly to your instance "
         echo "                        from your local datalabs folder with git push ec2"
-        echo " connect              - Tries to connect to the instance"
+        echo " connect              - Tries to connect to the instance. Use -p for port forwarding"
         echo " id                   - Returns the instance id e.g. i-ae23f836a5f3de"
         echo " ip                   - Returns the instance public address ec2-x-x-x-x...amazonaws.com"
         echo " status               - Returns the status of the instance"
@@ -377,10 +383,6 @@ function remote {
 		echo " jobs logs JOB_PREFIX - Gets logs for sagemaker jobs with prefix JOB_PREFIX"
 		echo " price INSTANCE_TYPE  - Get price of instance type e.g. p2_xlarge"
 		echo ""
-        echo " $STRONG Available options:"
-        echo ""
-        echo " -v / --verbose  - Commands return verbose output"
-        echo ""
 
     fi
 }
