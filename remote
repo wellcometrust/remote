@@ -293,7 +293,6 @@ function remote {
             --filters "Name=instance-type,Values=$FILTER_INSTANCES"
 
 	elif [[ "$1" == 'jobs' ]]; then
-<<<<<<< HEAD
 		if [[ "$2" == 'stop' ]]; then
 			if [[ "$3" ]]; then
 				JOB_NAME=$(aws sagemaker list-training-jobs --status-equals "InProgress" --name-contains "$3" --max-items 1 | \
